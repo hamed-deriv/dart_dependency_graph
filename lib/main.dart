@@ -42,8 +42,8 @@ List<DartClassStructure> parseDartFile(String path) {
         type: isAbstract ? ClassType.abstractClass : ClassType.concreteClass,
         name: className!,
         superClasse: superClass,
-        interfaces: interfaces?.split(','),
-        mixins: mixins?.split(','),
+        interfaces: interfaces?.split(',').map((item) => item.trim()).toList(),
+        mixins: mixins?.split(',').map((item) => item.trim()).toList(),
       ),
     );
   }
@@ -68,7 +68,7 @@ class DartClassStructure {
 
   @override
   String toString() =>
-      'name: $name, type: ${type.name}, ${superClasse != null ? 'superClass: $superClasse, ' : ''}${interfaces != null ? 'interfaces: $interfaces, ' : ''}${mixins != null ? 'mixins: $mixins' : ''}';
+      'name: $name, type: ${type.name}, ${superClasse != null ? 'superClass => $superClasse, ' : ''}${interfaces != null ? 'interfaces => $interfaces, ' : ''}${mixins != null ? 'mixins => $mixins' : ''}';
 }
 
 enum ClassType {
