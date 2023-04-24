@@ -68,7 +68,7 @@ class DartClassStructure {
 
   @override
   String toString() =>
-      'name: $name, type: ${type.name}, superClasse: $superClasse, interfaces: $interfaces, mixins: $mixins';
+      'name: $name, type: ${type.name}, ${superClasse != null ? 'superClass: $superClasse, ' : ''}${interfaces != null ? 'interfaces: $interfaces, ' : ''}${mixins != null ? 'mixins: $mixins' : ''}';
 }
 
 enum ClassType {
