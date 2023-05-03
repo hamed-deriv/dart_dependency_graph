@@ -39,7 +39,7 @@ void main(List<String> arguments) {
     }
   }
 
-  print(printAsGraph(dependencies));
+  print(printAsReadmeGraph(dependencies));
 }
 
 bool _isValid(String className, List<String> listenerNames) =>
@@ -71,6 +71,25 @@ String printAsGraph(List<CubitDependency> dependencies) {
   }
 
   buffer.writeln('}');
+
+  return '$buffer';
+}
+
+String printAsReadmeGraph(List<CubitDependency> dependencies) {
+  final StringBuffer buffer = StringBuffer();
+
+  buffer.writeln('```mermaid');
+  buffer.writeln('graph LR;');
+
+  for (final dependency in dependencies) {
+    buffer.writeln('  ${dependency.cubitName}["${dependency.cubitName}"];');
+
+    for (final listenerName in dependency.listenerNames) {
+      buffer.writeln('  ${dependency.cubitName} --> $listenerName;');
+    }
+  }
+
+  buffer.writeln('```');
 
   return '$buffer';
 }
