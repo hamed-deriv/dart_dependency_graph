@@ -3,8 +3,8 @@ import 'package:path/path.dart' as path;
 
 void main(List<String> arguments) {
   final directory = Directory(arguments.first);
-  final cubitClassPattern = RegExp(r'class\s+(\w+Cubit)\b');
-  final stateListenerClassPattern = RegExp(r'(\w+StateListener)\b');
+  final cubitClassPattern = RegExp(r'class\s+(\w+Cubit)');
+  final stateListenerClassPattern = RegExp(r'(\w+StateListener)');
 
   final List<CubitDependency> dependencies = [];
 
@@ -27,14 +27,12 @@ void main(List<String> arguments) {
       listenerNames.add(listenerName!);
     }
 
-    if (className.isNotEmpty &&
-        className.startsWith(RegExp(r'^(?!(Fake|Mock|_))\w+')) &&
-        listenerNames.isNotEmpty) {
+    if (_isValid(className, listenerNames)) {
       dependencies.add(
         CubitDependency(
           cubitName: className,
           listenerNames: listenerNames
-              .map((e) => e.replaceAll('StateListener', 'Cubit'))
+              .map((element) => element.replaceAll('StateListener', 'Cubit'))
               .toList(),
         ),
       );
@@ -43,6 +41,11 @@ void main(List<String> arguments) {
 
   print(printAsGraph(dependencies));
 }
+
+bool _isValid(String className, List<String> listenerNames) =>
+    className.isNotEmpty &&
+    listenerNames.isNotEmpty &&
+    className.startsWith(RegExp(r'^(?!(Fake|Mock|_))\w+'));
 
 List<File> _findDartFiles(Directory directory) {
   return directory
