@@ -2,23 +2,59 @@ import 'dart:io';
 
 import 'package:dart_dependency_graph/src/models/class_structure_model.dart';
 
-void main(List<String> arguments) {
-  final List<ClassStructureModel> result = <ClassStructureModel>[];
+void main(List<String> arguments) async {
+  final List<ClassStructureModel> projectStructure = <ClassStructureModel>[];
 
   final String path = arguments.first;
-  final Directory dir = Directory(path);
-  final List<FileSystemEntity> entities = dir.listSync(recursive: true);
+  final List<FileSystemEntity> entities = _getAllFiles(path);
 
   for (final FileSystemEntity entity in entities) {
     if (entity is File && entity.path.endsWith('.dart')) {
-      result.addAll(parseDartFile(entity.path));
+      projectStructure.addAll(_parseDartFile(entity.path));
     }
   }
 
-  print(printGraph(result));
+  await _generateOutput(projectStructure);
 }
 
-String printGraph(List<ClassStructureModel> classStructures) {
+List<FileSystemEntity> _getAllFiles(String path) =>
+    Directory(path).listSync(recursive: true);
+
+List<ClassStructureModel> _parseDartFile(String path) {
+  final List<ClassStructureModel> result = <ClassStructureModel>[];
+
+  final String fileContent = File(path).readAsStringSync();
+
+  final RegExp regex = RegExp(
+    r'(abstract\s+)?(class|extension)\s+(\w+)\s*(extends\s+([\w<>]+))?(?:\s*with\s+([\w,\s]+))?(?:\s*implements\s+([\w,\s]+))?',
+    multiLine: true,
+  );
+
+  final Iterable<RegExpMatch> matches = regex.allMatches(fileContent);
+
+  for (final RegExpMatch match in matches) {
+    final bool isAbstract = match.group(1) != null;
+    final String? className = match.group(3);
+    final String? superClass = match.group(5);
+    final String? mixins = match.group(6);
+    final String? interfaces = match.group(7);
+
+    result.add(
+      ClassStructureModel(
+        type: isAbstract ? ClassType.abstractClass : ClassType.concreteClass,
+        name: className!,
+        superClasse: superClass,
+        interfaces:
+            interfaces?.split(',').map((String item) => item.trim()).toList(),
+        mixins: mixins?.split(',').map((String item) => item.trim()).toList(),
+      ),
+    );
+  }
+
+  return result;
+}
+
+String _printGraph(List<ClassStructureModel> classStructures) {
   final StringBuffer buffer = StringBuffer();
 
   buffer.writeln('digraph G {');
@@ -57,36 +93,11 @@ String printGraph(List<ClassStructureModel> classStructures) {
   return '$buffer';
 }
 
-List<ClassStructureModel> parseDartFile(String path) {
-  final List<ClassStructureModel> result = <ClassStructureModel>[];
+Future<void> _generateOutput(List<ClassStructureModel> projectStructure) async {
+  File('dependency_graph.dot').writeAsStringSync(_printGraph(projectStructure));
 
-  final String fileContent = File(path).readAsStringSync();
-
-  final RegExp regex = RegExp(
-    r'(abstract\s+)?(class|extension)\s+(\w+)\s*(extends\s+([\w<>]+))?(?:\s*with\s+([\w,\s]+))?(?:\s*implements\s+([\w,\s]+))?',
-    multiLine: true,
+  await Process.run(
+    'dot',
+    <String>['-Tpng', 'dependency_graph.dot', '-o', 'dependency_graph.png'],
   );
-
-  final Iterable<RegExpMatch> matches = regex.allMatches(fileContent);
-
-  for (final RegExpMatch match in matches) {
-    final bool isAbstract = match.group(1) != null;
-    final String? className = match.group(3);
-    final String? superClass = match.group(5);
-    final String? mixins = match.group(6);
-    final String? interfaces = match.group(7);
-
-    result.add(
-      ClassStructureModel(
-        type: isAbstract ? ClassType.abstractClass : ClassType.concreteClass,
-        name: className!,
-        superClasse: superClass,
-        interfaces:
-            interfaces?.split(',').map((String item) => item.trim()).toList(),
-        mixins: mixins?.split(',').map((String item) => item.trim()).toList(),
-      ),
-    );
-  }
-
-  return result;
 }
