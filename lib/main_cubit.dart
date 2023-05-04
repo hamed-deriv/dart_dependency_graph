@@ -39,7 +39,7 @@ void main(List<String> arguments) {
     }
   }
 
-  print(printAsReadmeGraph(dependencies));
+  print(printReadmeGraph(dependencies));
 }
 
 bool _isValid(String className, List<String> listenerNames) =>
@@ -56,7 +56,7 @@ List<File> _findDartFiles(Directory directory) {
       .toList();
 }
 
-String printAsGraph(List<CubitDependency> dependencies) {
+String printGraph(List<CubitDependency> dependencies) {
   final StringBuffer buffer = StringBuffer();
 
   buffer.writeln('digraph {');
@@ -75,7 +75,7 @@ String printAsGraph(List<CubitDependency> dependencies) {
   return '$buffer';
 }
 
-String printAsReadmeGraph(List<CubitDependency> dependencies) {
+String printReadmeGraph(List<CubitDependency> dependencies) {
   final StringBuffer buffer = StringBuffer();
 
   buffer.writeln('```mermaid');

@@ -13,9 +13,47 @@ void main(List<String> arguments) {
     }
   }
 
-  for (var element in result) {
-    print(element);
+  print(printGraph(result));
+}
+
+String printGraph(List<DartClassStructure> classStructures) {
+  final StringBuffer buffer = StringBuffer();
+
+  buffer.writeln('digraph G {');
+  buffer.writeln('  rankdir=LR;');
+
+  for (final classStructure in classStructures) {
+    buffer.writeln(
+      '  ${classStructure.name} [shape=${classStructure.type == ClassType.abstractClass ? 'doubleoctagon' : 'rectangle'}];',
+    );
+
+    if (classStructure.superClasse != null) {
+      buffer.writeln(
+        '  ${classStructure.name} -> ${classStructure.superClasse};',
+      );
+    }
+
+    if (classStructure.interfaces != null &&
+        classStructure.interfaces!.isNotEmpty) {
+      for (final interface in classStructure.interfaces!) {
+        buffer.writeln(
+          '  ${classStructure.name} -> $interface [style=dashed, arrowhead=empty];',
+        );
+      }
+    }
+
+    if (classStructure.mixins != null && classStructure.mixins!.isNotEmpty) {
+      for (final mixin in classStructure.mixins!) {
+        buffer.writeln(
+          '  ${classStructure.name} -> $mixin [style=dashed, arrowhead=empty];',
+        );
+      }
+    }
   }
+
+  buffer.writeln('}');
+
+  return '$buffer';
 }
 
 List<DartClassStructure> parseDartFile(String path) {
@@ -41,9 +79,15 @@ List<DartClassStructure> parseDartFile(String path) {
       DartClassStructure(
         type: isAbstract ? ClassType.abstractClass : ClassType.concreteClass,
         name: className!,
-        superClasse: superClass,
-        interfaces: interfaces?.split(',').map((item) => item.trim()).toList(),
-        mixins: mixins?.split(',').map((item) => item.trim()).toList(),
+        superClasse: superClass?.replaceAll('>', '').replaceAll('<', ''),
+        interfaces: interfaces
+            ?.split(',')
+            .map((item) => item.trim().replaceAll('>', '').replaceAll('<', ''))
+            .toList(),
+        mixins: mixins
+            ?.split(',')
+            .map((item) => item.trim().replaceAll('>', '').replaceAll('<', ''))
+            .toList(),
       ),
     );
   }
