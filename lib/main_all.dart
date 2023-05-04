@@ -63,7 +63,7 @@ List<ClassStructureModel> parseDartFile(String path) {
   final String fileContent = File(path).readAsStringSync();
 
   final RegExp regex = RegExp(
-    r'(abstract\s+)?(class|extension)\s+(\w+)\s*(extends\s+([\w<>]+))?(?:\s*with\s+([\w,<>\s]+))?(?:\s*implements\s+([\w,<>\s]+))?',
+    r'(abstract\s+)?(class|extension)\s+(\w+)\s*(extends\s+([\w<>]+))?(?:\s*with\s+([\w,\s]+))?(?:\s*implements\s+([\w,\s]+))?',
     multiLine: true,
   );
 
@@ -80,17 +80,10 @@ List<ClassStructureModel> parseDartFile(String path) {
       ClassStructureModel(
         type: isAbstract ? ClassType.abstractClass : ClassType.concreteClass,
         name: className!,
-        superClasse: superClass?.replaceAll('>', '').replaceAll('<', ''),
-        interfaces: interfaces
-            ?.split(',')
-            .map((String item) =>
-                item.trim().replaceAll('>', '').replaceAll('<', ''))
-            .toList(),
-        mixins: mixins
-            ?.split(',')
-            .map((String item) =>
-                item.trim().replaceAll('>', '').replaceAll('<', ''))
-            .toList(),
+        superClasse: superClass,
+        interfaces:
+            interfaces?.split(',').map((String item) => item.trim()).toList(),
+        mixins: mixins?.split(',').map((String item) => item.trim()).toList(),
       ),
     );
   }
