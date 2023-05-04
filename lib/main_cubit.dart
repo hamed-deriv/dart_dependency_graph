@@ -2,28 +2,29 @@ import 'dart:io';
 import 'package:path/path.dart' as path;
 
 void main(List<String> arguments) {
-  final directory = Directory(arguments.first);
-  final cubitClassPattern = RegExp(r'class\s+(\w+Cubit)');
-  final stateListenerClassPattern = RegExp(r'(\w+StateListener)');
+  final Directory directory = Directory(arguments.first);
+  final RegExp cubitClassPattern = RegExp(r'class\s+(\w+Cubit)');
+  final RegExp stateListenerClassPattern = RegExp(r'(\w+StateListener)');
 
-  final List<CubitDependency> dependencies = [];
+  final List<CubitDependency> dependencies = <CubitDependency>[];
 
-  for (final file in _findDartFiles(directory)) {
-    final content = file.readAsStringSync();
-    final classes =
-        cubitClassPattern.allMatches(content).map((match) => match.group(1));
-    final listeners = stateListenerClassPattern
+  for (final File file in _findDartFiles(directory)) {
+    final String content = file.readAsStringSync();
+    final Iterable<String?> classes = cubitClassPattern
         .allMatches(content)
-        .map((match) => match.group(1));
+        .map((RegExpMatch match) => match.group(1));
+    final Iterable<String?> listeners = stateListenerClassPattern
+        .allMatches(content)
+        .map((RegExpMatch match) => match.group(1));
 
     String className = '';
-    List<String> listenerNames = [];
+    final List<String> listenerNames = <String>[];
 
-    for (final name in classes) {
+    for (final String? name in classes) {
       className = name!;
     }
 
-    for (final listenerName in listeners) {
+    for (final String? listenerName in listeners) {
       listenerNames.add(listenerName!);
     }
 
@@ -32,7 +33,8 @@ void main(List<String> arguments) {
         CubitDependency(
           cubitName: className,
           listenerNames: listenerNames
-              .map((element) => element.replaceAll('StateListener', 'Cubit'))
+              .map((String element) =>
+                  element.replaceAll('StateListener', 'Cubit'))
               .toList(),
         ),
       );
@@ -47,14 +49,12 @@ bool _isValid(String className, List<String> listenerNames) =>
     listenerNames.isNotEmpty &&
     className.startsWith(RegExp(r'^(?!(Fake|Mock|_))\w+'));
 
-List<File> _findDartFiles(Directory directory) {
-  return directory
-      .listSync(recursive: true)
-      .where(
-          (entity) => entity is File && path.extension(entity.path) == '.dart')
-      .cast<File>()
-      .toList();
-}
+List<File> _findDartFiles(Directory directory) => directory
+    .listSync(recursive: true)
+    .where((FileSystemEntity entity) =>
+        entity is File && path.extension(entity.path) == '.dart')
+    .cast<File>()
+    .toList();
 
 String printGraph(List<CubitDependency> dependencies) {
   final StringBuffer buffer = StringBuffer();
@@ -62,10 +62,10 @@ String printGraph(List<CubitDependency> dependencies) {
   buffer.writeln('digraph {');
   buffer.writeln('  rankdir=LR;');
 
-  for (final dependency in dependencies) {
+  for (final CubitDependency dependency in dependencies) {
     buffer.writeln('  ${dependency.cubitName} [shape=box];');
 
-    for (final listenerName in dependency.listenerNames) {
+    for (final String listenerName in dependency.listenerNames) {
       buffer.writeln('  ${dependency.cubitName} -> $listenerName;');
     }
   }
@@ -81,10 +81,10 @@ String printReadmeGraph(List<CubitDependency> dependencies) {
   buffer.writeln('```mermaid');
   buffer.writeln('graph LR;');
 
-  for (final dependency in dependencies) {
+  for (final CubitDependency dependency in dependencies) {
     buffer.writeln('  ${dependency.cubitName}["${dependency.cubitName}"];');
 
-    for (final listenerName in dependency.listenerNames) {
+    for (final String listenerName in dependency.listenerNames) {
       buffer.writeln('  ${dependency.cubitName} --> $listenerName;');
     }
   }

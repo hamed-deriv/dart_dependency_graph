@@ -1,13 +1,13 @@
 import 'dart:io';
 
 void main(List<String> arguments) {
-  final List<DartClassStructure> result = [];
+  final List<DartClassStructure> result = <DartClassStructure>[];
 
-  String path = arguments.first;
-  Directory dir = Directory(path);
-  List<FileSystemEntity> entities = dir.listSync(recursive: true);
+  final String path = arguments.first;
+  final Directory dir = Directory(path);
+  final List<FileSystemEntity> entities = dir.listSync(recursive: true);
 
-  for (var entity in entities) {
+  for (final FileSystemEntity entity in entities) {
     if (entity is File && entity.path.endsWith('.dart')) {
       result.addAll(parseDartFile(entity.path));
     }
@@ -22,7 +22,7 @@ String printGraph(List<DartClassStructure> classStructures) {
   buffer.writeln('digraph G {');
   buffer.writeln('  rankdir=LR;');
 
-  for (final classStructure in classStructures) {
+  for (final DartClassStructure classStructure in classStructures) {
     buffer.writeln(
       '  ${classStructure.name} [shape=${classStructure.type == ClassType.abstractClass ? 'doubleoctagon' : 'rectangle'}];',
     );
@@ -34,7 +34,7 @@ String printGraph(List<DartClassStructure> classStructures) {
     }
 
     if (classStructure.interfaces != null) {
-      for (final interface in classStructure.interfaces!) {
+      for (final String interface in classStructure.interfaces!) {
         buffer.writeln(
           '  ${classStructure.name} -> $interface [style=dashed, arrowhead=empty];',
         );
@@ -42,7 +42,7 @@ String printGraph(List<DartClassStructure> classStructures) {
     }
 
     if (classStructure.mixins != null) {
-      for (final mixin in classStructure.mixins!) {
+      for (final String mixin in classStructure.mixins!) {
         buffer.writeln(
           '  ${classStructure.name} -> $mixin [style=dashed, arrowhead=empty];',
         );
@@ -56,23 +56,23 @@ String printGraph(List<DartClassStructure> classStructures) {
 }
 
 List<DartClassStructure> parseDartFile(String path) {
-  final List<DartClassStructure> result = [];
+  final List<DartClassStructure> result = <DartClassStructure>[];
 
-  var fileContent = File(path).readAsStringSync();
+  final String fileContent = File(path).readAsStringSync();
 
-  final regex = RegExp(
+  final RegExp regex = RegExp(
     r'(abstract\s+)?(class|extension)\s+(\w+)\s*(extends\s+([\w<>]+))?(?:\s*with\s+([\w,<>\s]+))?(?:\s*implements\s+([\w,<>\s]+))?',
     multiLine: true,
   );
 
-  final matches = regex.allMatches(fileContent);
+  final Iterable<RegExpMatch> matches = regex.allMatches(fileContent);
 
-  for (final match in matches) {
-    final isAbstract = match.group(1) != null;
-    final className = match.group(3);
-    final superClass = match.group(5);
-    final mixins = match.group(6);
-    final interfaces = match.group(7);
+  for (final RegExpMatch match in matches) {
+    final bool isAbstract = match.group(1) != null;
+    final String? className = match.group(3);
+    final String? superClass = match.group(5);
+    final String? mixins = match.group(6);
+    final String? interfaces = match.group(7);
 
     result.add(
       DartClassStructure(
@@ -81,11 +81,13 @@ List<DartClassStructure> parseDartFile(String path) {
         superClasse: superClass?.replaceAll('>', '').replaceAll('<', ''),
         interfaces: interfaces
             ?.split(',')
-            .map((item) => item.trim().replaceAll('>', '').replaceAll('<', ''))
+            .map((String item) =>
+                item.trim().replaceAll('>', '').replaceAll('<', ''))
             .toList(),
         mixins: mixins
             ?.split(',')
-            .map((item) => item.trim().replaceAll('>', '').replaceAll('<', ''))
+            .map((String item) =>
+                item.trim().replaceAll('>', '').replaceAll('<', ''))
             .toList(),
       ),
     );
