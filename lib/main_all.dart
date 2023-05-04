@@ -1,7 +1,9 @@
 import 'dart:io';
 
+import 'package:dart_dependency_graph/src/models/class_structure_model.dart';
+
 void main(List<String> arguments) {
-  final List<DartClassStructure> result = <DartClassStructure>[];
+  final List<ClassStructureModel> result = <ClassStructureModel>[];
 
   final String path = arguments.first;
   final Directory dir = Directory(path);
@@ -16,13 +18,13 @@ void main(List<String> arguments) {
   print(printGraph(result));
 }
 
-String printGraph(List<DartClassStructure> classStructures) {
+String printGraph(List<ClassStructureModel> classStructures) {
   final StringBuffer buffer = StringBuffer();
 
   buffer.writeln('digraph G {');
   buffer.writeln('  rankdir=LR;');
 
-  for (final DartClassStructure classStructure in classStructures) {
+  for (final ClassStructureModel classStructure in classStructures) {
     buffer.writeln(
       '  ${classStructure.name} [shape=${classStructure.type == ClassType.abstractClass ? 'doubleoctagon' : 'rectangle'}];',
     );
@@ -55,8 +57,8 @@ String printGraph(List<DartClassStructure> classStructures) {
   return '$buffer';
 }
 
-List<DartClassStructure> parseDartFile(String path) {
-  final List<DartClassStructure> result = <DartClassStructure>[];
+List<ClassStructureModel> parseDartFile(String path) {
+  final List<ClassStructureModel> result = <ClassStructureModel>[];
 
   final String fileContent = File(path).readAsStringSync();
 
@@ -75,7 +77,7 @@ List<DartClassStructure> parseDartFile(String path) {
     final String? interfaces = match.group(7);
 
     result.add(
-      DartClassStructure(
+      ClassStructureModel(
         type: isAbstract ? ClassType.abstractClass : ClassType.concreteClass,
         name: className!,
         superClasse: superClass?.replaceAll('>', '').replaceAll('<', ''),
@@ -94,29 +96,4 @@ List<DartClassStructure> parseDartFile(String path) {
   }
 
   return result;
-}
-
-class DartClassStructure {
-  DartClassStructure({
-    required this.type,
-    required this.name,
-    this.superClasse,
-    this.interfaces,
-    this.mixins,
-  });
-
-  final ClassType type;
-  final String name;
-  final String? superClasse;
-  final List<String>? interfaces;
-  final List<String>? mixins;
-
-  @override
-  String toString() =>
-      'name: $name, type: ${type.name}, ${superClasse != null ? 'superClass => $superClasse, ' : ''}${interfaces != null ? 'interfaces => $interfaces, ' : ''}${mixins != null ? 'mixins => $mixins' : ''}';
-}
-
-enum ClassType {
-  concreteClass,
-  abstractClass,
 }

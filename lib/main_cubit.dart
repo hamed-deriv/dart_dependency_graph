@@ -1,12 +1,14 @@
 import 'dart:io';
 import 'package:path/path.dart' as path;
 
+import 'package:dart_dependency_graph/src/models/cubit_dependency_model.dart';
+
 void main(List<String> arguments) {
   final Directory directory = Directory(arguments.first);
   final RegExp cubitClassPattern = RegExp(r'class\s+(\w+Cubit)');
   final RegExp stateListenerClassPattern = RegExp(r'(\w+StateListener)');
 
-  final List<CubitDependency> dependencies = <CubitDependency>[];
+  final List<CubitDependencyModel> dependencies = <CubitDependencyModel>[];
 
   for (final File file in _findDartFiles(directory)) {
     final String content = file.readAsStringSync();
@@ -30,7 +32,7 @@ void main(List<String> arguments) {
 
     if (_isValid(className, listenerNames)) {
       dependencies.add(
-        CubitDependency(
+        CubitDependencyModel(
           cubitName: className,
           listenerNames: listenerNames
               .map((String element) =>
@@ -56,13 +58,13 @@ List<File> _findDartFiles(Directory directory) => directory
     .cast<File>()
     .toList();
 
-String printGraph(List<CubitDependency> dependencies) {
+String printGraph(List<CubitDependencyModel> dependencies) {
   final StringBuffer buffer = StringBuffer();
 
   buffer.writeln('digraph {');
   buffer.writeln('  rankdir=LR;');
 
-  for (final CubitDependency dependency in dependencies) {
+  for (final CubitDependencyModel dependency in dependencies) {
     buffer.writeln('  ${dependency.cubitName} [shape=box];');
 
     for (final String listenerName in dependency.listenerNames) {
@@ -75,13 +77,13 @@ String printGraph(List<CubitDependency> dependencies) {
   return '$buffer';
 }
 
-String printReadmeGraph(List<CubitDependency> dependencies) {
+String printReadmeGraph(List<CubitDependencyModel> dependencies) {
   final StringBuffer buffer = StringBuffer();
 
   buffer.writeln('```mermaid');
   buffer.writeln('graph LR;');
 
-  for (final CubitDependency dependency in dependencies) {
+  for (final CubitDependencyModel dependency in dependencies) {
     buffer.writeln('  ${dependency.cubitName}["${dependency.cubitName}"];');
 
     for (final String listenerName in dependency.listenerNames) {
@@ -92,18 +94,4 @@ String printReadmeGraph(List<CubitDependency> dependencies) {
   buffer.writeln('```');
 
   return '$buffer';
-}
-
-class CubitDependency {
-  CubitDependency({
-    required this.cubitName,
-    required this.listenerNames,
-  });
-
-  final String cubitName;
-  final List<String> listenerNames;
-
-  @override
-  String toString() =>
-      'CubitDependency{cubitName: $cubitName, listenerNames: $listenerNames}';
 }
