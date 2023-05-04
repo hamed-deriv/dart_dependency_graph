@@ -33,8 +33,7 @@ String printGraph(List<DartClassStructure> classStructures) {
       );
     }
 
-    if (classStructure.interfaces != null &&
-        classStructure.interfaces!.isNotEmpty) {
+    if (classStructure.interfaces != null) {
       for (final interface in classStructure.interfaces!) {
         buffer.writeln(
           '  ${classStructure.name} -> $interface [style=dashed, arrowhead=empty];',
@@ -42,7 +41,7 @@ String printGraph(List<DartClassStructure> classStructures) {
       }
     }
 
-    if (classStructure.mixins != null && classStructure.mixins!.isNotEmpty) {
+    if (classStructure.mixins != null) {
       for (final mixin in classStructure.mixins!) {
         buffer.writeln(
           '  ${classStructure.name} -> $mixin [style=dashed, arrowhead=empty];',
