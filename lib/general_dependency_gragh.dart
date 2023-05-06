@@ -104,7 +104,12 @@ class GeneralDependencyGraph implements BaseDependencyGraph {
 
     await Process.run(
       'dot',
-      <String>['-Tsvg', 'dependency_graph.dot', '-o', 'dependency_graph.svg'],
+      <String>[
+        '-Tsvg',
+        'dependency_graph.dot',
+        '-o',
+        'dependency_graph.svg',
+      ],
     );
   }
 }
