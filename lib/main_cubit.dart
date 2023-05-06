@@ -1,20 +1,21 @@
 import 'dart:io';
 import 'package:path/path.dart' as path;
 
-import 'package:dart_dependency_graph/src/models/cubit_dependency_model.dart';
+import 'package:dart_dependency_graph/src/models/class_structure_model.dart';
 
 void main(List<String> arguments) {
   final Directory directory = Directory(arguments.first);
-  final RegExp cubitClassPattern = RegExp(r'class\s+(\w+Cubit)');
+  final RegExp cubitOrBlocClassPattern = RegExp(r'class\s+(\w+(Cubit|Bloc))');
   final RegExp stateListenerClassPattern = RegExp(r'(\w+StateListener)');
 
-  final List<CubitDependencyModel> dependencies = <CubitDependencyModel>[];
+  final List<ClassStructureModel> dependencies = <ClassStructureModel>[];
 
   for (final File file in _findDartFiles(directory)) {
     final String content = file.readAsStringSync();
-    final Iterable<String?> classes = cubitClassPattern
+    final Iterable<String?> classes = cubitOrBlocClassPattern
         .allMatches(content)
         .map((RegExpMatch match) => match.group(1));
+
     final Iterable<String?> listeners = stateListenerClassPattern
         .allMatches(content)
         .map((RegExpMatch match) => match.group(1));
@@ -30,11 +31,12 @@ void main(List<String> arguments) {
       listenerNames.add(listenerName!);
     }
 
-    if (_isValid(className, listenerNames)) {
+    if (_isValidCubit(className, listenerNames)) {
       dependencies.add(
-        CubitDependencyModel(
-          cubitName: className,
-          listenerNames: listenerNames
+        ClassStructureModel(
+          type: ClassType.concreteClass,
+          name: className,
+          interfaces: listenerNames
               .map((String element) =>
                   element.replaceAll('StateListener', 'Cubit'))
               .toList(),
@@ -43,12 +45,11 @@ void main(List<String> arguments) {
     }
   }
 
-  print(printReadmeGraph(dependencies));
+  print(printGraph(dependencies));
 }
 
-bool _isValid(String className, List<String> listenerNames) =>
+bool _isValidCubit(String className, List<String> listenerNames) =>
     className.isNotEmpty &&
-    listenerNames.isNotEmpty &&
     className.startsWith(RegExp(r'^(?!(Fake|Mock|_))\w+'));
 
 List<File> _findDartFiles(Directory directory) => directory
@@ -58,40 +59,23 @@ List<File> _findDartFiles(Directory directory) => directory
     .cast<File>()
     .toList();
 
-String printGraph(List<CubitDependencyModel> dependencies) {
+String printGraph(List<ClassStructureModel> dependencies) {
   final StringBuffer buffer = StringBuffer();
 
   buffer.writeln('digraph {');
   buffer.writeln('  rankdir=LR;');
 
-  for (final CubitDependencyModel dependency in dependencies) {
-    buffer.writeln('  ${dependency.cubitName} [shape=box];');
+  for (final ClassStructureModel dependency in dependencies) {
+    buffer.writeln('  ${dependency.name} [shape=box];');
 
-    for (final String listenerName in dependency.listenerNames) {
-      buffer.writeln('  ${dependency.cubitName} -> $listenerName;');
+    if (dependency.interfaces != null) {
+      for (final String listenerName in dependency.interfaces!) {
+        buffer.writeln('  ${dependency.name} -> $listenerName;');
+      }
     }
   }
 
   buffer.writeln('}');
-
-  return '$buffer';
-}
-
-String printReadmeGraph(List<CubitDependencyModel> dependencies) {
-  final StringBuffer buffer = StringBuffer();
-
-  buffer.writeln('```mermaid');
-  buffer.writeln('graph LR;');
-
-  for (final CubitDependencyModel dependency in dependencies) {
-    buffer.writeln('  ${dependency.cubitName}["${dependency.cubitName}"];');
-
-    for (final String listenerName in dependency.listenerNames) {
-      buffer.writeln('  ${dependency.cubitName} --> $listenerName;');
-    }
-  }
-
-  buffer.writeln('```');
 
   return '$buffer';
 }

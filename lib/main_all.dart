@@ -25,12 +25,12 @@ List<ClassStructureModel> _parseDartFile(String path) {
 
   final String fileContent = File(path).readAsStringSync();
 
-  final RegExp regex = RegExp(
+  final RegExp extractionRegex = RegExp(
     r'(abstract\s+)?(class|extension)\s+(\w+)\s*(extends\s+([\w<>]+))?(?:\s*with\s+([\w,\s]+))?(?:\s*implements\s+([\w,\s]+))?',
     multiLine: true,
   );
 
-  final Iterable<RegExpMatch> matches = regex.allMatches(fileContent);
+  final Iterable<RegExpMatch> matches = extractionRegex.allMatches(fileContent);
 
   for (final RegExpMatch match in matches) {
     final bool isAbstract = match.group(1) != null;
