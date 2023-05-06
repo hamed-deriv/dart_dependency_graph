@@ -1,4 +1,3 @@
-
 class ClassStructureModel {
   ClassStructureModel({
     required this.type,
