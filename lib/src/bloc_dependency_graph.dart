@@ -3,18 +3,15 @@ import 'dart:io';
 import 'package:dart_dependency_graph/src/base_dependency_graph.dart';
 import 'package:dart_dependency_graph/src/models/class_structure_model.dart';
 
-class BlocDependencyGraph implements BaseDependencyGraph {
-  @override
-  List<FileSystemEntity> getAllFiles(String path) => Directory(path)
-      .listSync(recursive: true)
-      .where(
-        (FileSystemEntity entry) =>
-            entry is File && entry.path.endsWith('.dart'),
-      )
-      .toList();
+class BlocDependencyGraph extends BaseDependencyGraph {
+  factory BlocDependencyGraph() => _instance;
+
+  BlocDependencyGraph._internal();
+
+  static final BlocDependencyGraph _instance = BlocDependencyGraph._internal();
 
   @override
-  List<ClassStructureModel> parseDartFile(String path) {
+  List<ClassStructureModel> parseFile(String path) {
     final RegExp cubitOrBlocClassPattern = RegExp(r'class\s+(\w+(Cubit|Bloc))');
     final RegExp stateListenerClassPattern = RegExp(r'(\w+StateListener)');
 
@@ -77,22 +74,6 @@ class BlocDependencyGraph implements BaseDependencyGraph {
     buffer.writeln('}');
 
     return '$buffer';
-  }
-
-  @override
-  Future<void> generateOutput(List<ClassStructureModel> classStructures) async {
-    File('bloc_dependency_graph.dot')
-        .writeAsStringSync(getGraph(classStructures));
-
-    await Process.run(
-      'dot',
-      <String>[
-        '-Tsvg',
-        'bloc_dependency_graph.dot',
-        '-o',
-        'bloc_dependency_graph.svg',
-      ],
-    );
   }
 
   bool _isValidCubit(String className, List<String> listenerNames) =>

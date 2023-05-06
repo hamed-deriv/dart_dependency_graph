@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'package:dart_dependency_graph/general_dependency_graph.dart';
+import 'package:dart_dependency_graph/src/general_dependency_graph.dart';
 import 'package:dart_dependency_graph/src/models/class_structure_model.dart';
 
 void main(List<String> arguments) async {
@@ -10,8 +10,7 @@ void main(List<String> arguments) async {
       GeneralDependencyGraph().getAllFiles(arguments.first);
 
   for (final FileSystemEntity entity in entities) {
-    projectStructure
-        .addAll(GeneralDependencyGraph().parseDartFile(entity.path));
+    projectStructure.addAll(GeneralDependencyGraph().parseFile(entity.path));
   }
 
   await GeneralDependencyGraph().generateOutput(projectStructure);

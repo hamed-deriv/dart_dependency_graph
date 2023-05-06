@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:dart_dependency_graph/src/base_dependency_graph.dart';
 import 'package:dart_dependency_graph/src/models/class_structure_model.dart';
 
-class GeneralDependencyGraph implements BaseDependencyGraph {
+class GeneralDependencyGraph extends BaseDependencyGraph {
   factory GeneralDependencyGraph() => _instance;
 
   GeneralDependencyGraph._internal();
@@ -12,16 +12,7 @@ class GeneralDependencyGraph implements BaseDependencyGraph {
       GeneralDependencyGraph._internal();
 
   @override
-  List<FileSystemEntity> getAllFiles(String path) => Directory(path)
-      .listSync(recursive: true)
-      .where(
-        (FileSystemEntity entry) =>
-            entry is File && entry.path.endsWith('.dart'),
-      )
-      .toList();
-
-  @override
-  List<ClassStructureModel> parseDartFile(String path) {
+  List<ClassStructureModel> parseFile(String path) {
     final List<ClassStructureModel> result = <ClassStructureModel>[];
 
     final String fileContent = File(path).readAsStringSync();
@@ -94,22 +85,5 @@ class GeneralDependencyGraph implements BaseDependencyGraph {
     buffer.writeln('}');
 
     return '$buffer';
-  }
-
-  @override
-  Future<void> generateOutput(
-    List<ClassStructureModel> projectStructure,
-  ) async {
-    File('dependency_graph.dot').writeAsStringSync(getGraph(projectStructure));
-
-    await Process.run(
-      'dot',
-      <String>[
-        '-Tsvg',
-        'dependency_graph.dot',
-        '-o',
-        'dependency_graph.svg',
-      ],
-    );
   }
 }
