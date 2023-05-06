@@ -9,5 +9,5 @@ abstract class BaseDependencyGraph {
 
   String getGraph(List<ClassStructureModel> classStructures);
 
-  Future<void> generateOutput();
+  Future<void> generateOutput(List<ClassStructureModel> classStructures);
 }
