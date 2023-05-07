@@ -15,7 +15,8 @@ class ClassStructureModel {
 
   @override
   String toString() =>
-      'name: $name, type: ${type.name}, ${superClasse != null ? 'superClass => $superClasse, ' : ''}${interfaces != null ? 'interfaces => $interfaces, ' : ''}${mixins != null ? 'mixins => $mixins' : ''}';
+      'name: $name type: ${type.name} ${superClasse != null ? 'superClass => $superClasse ' : ''}${interfaces != null ? 'interfaces => $interfaces ' : ''}${mixins != null ? 'mixins => $mixins' : ''}'
+          .trim();
 }
 
 enum ClassType {
