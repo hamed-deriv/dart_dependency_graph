@@ -17,23 +17,23 @@ abstract class BaseDependencyGraph {
     final StringBuffer buffer = StringBuffer();
 
     buffer.writeln('digraph G {');
-    buffer.writeln('  rankdir=LR;');
+    buffer.writeln('\trankdir=LR;');
 
     for (final ClassStructureModel classStructure in classStructures) {
       buffer.writeln(
-        '  ${classStructure.name} [shape=${classStructure.type == ClassType.abstractClass ? 'doubleoctagon' : 'rectangle'}];',
+        '\t${classStructure.name} [shape=${classStructure.type == ClassType.abstractClass ? 'doubleoctagon' : 'rectangle'}];',
       );
 
       if (classStructure.superClasse != null) {
         buffer.writeln(
-          '  ${classStructure.name} -> ${classStructure.superClasse};',
+          '\t${classStructure.name} -> ${classStructure.superClasse};',
         );
       }
 
       if (classStructure.interfaces != null) {
         for (final String interface in classStructure.interfaces!) {
           buffer.writeln(
-            '  ${classStructure.name} -> $interface [style=dashed, arrowhead=empty];',
+            '\t${classStructure.name} -> $interface [style=dashed, arrowhead=empty];',
           );
         }
       }
@@ -41,7 +41,7 @@ abstract class BaseDependencyGraph {
       if (classStructure.mixins != null) {
         for (final String mixin in classStructure.mixins!) {
           buffer.writeln(
-            '  ${classStructure.name} -> $mixin [style=dashed, arrowhead=empty];',
+            '\t${classStructure.name} -> $mixin [style=dashed, arrowhead=empty];',
           );
         }
       }
