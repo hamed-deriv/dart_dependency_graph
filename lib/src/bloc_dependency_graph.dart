@@ -54,28 +54,6 @@ class BlocDependencyGraph extends BaseDependencyGraph {
     return result;
   }
 
-  @override
-  String getGraph(List<ClassStructureModel> classStructures) {
-    final StringBuffer buffer = StringBuffer();
-
-    buffer.writeln('digraph {');
-    buffer.writeln('  rankdir=LR;');
-
-    for (final ClassStructureModel classStructure in classStructures) {
-      buffer.writeln('  ${classStructure.name} [shape=box];');
-
-      if (classStructure.interfaces != null) {
-        for (final String listenerName in classStructure.interfaces!) {
-          buffer.writeln('  ${classStructure.name} -> $listenerName;');
-        }
-      }
-    }
-
-    buffer.writeln('}');
-
-    return '$buffer';
-  }
-
   bool _isValidCubit(String className, List<String> listenerNames) =>
       className.isNotEmpty &&
       className.startsWith(RegExp(r'^(?!(Fake|Mock|_))\w+'));
